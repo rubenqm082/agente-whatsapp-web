@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente de IA para WhatsApp</title>
+    <style>
+/* =========================
+   Design System
+========================= */
+:root{
+  --bg: #0f172a;
+  --brand-1: #667eea;
+  --brand-2: #764ba2;
+  --brand-soft: rgba(102,126,234,0.12);
+
+  --danger-1: #ff6b6b;
+  --danger-soft: #fff5f5;
+
+  --success-1: #22c55e;
+  --success-soft: #f0fdf4;
+
+  --ink-1: #0f172a;
+  --ink-2: #334155;
+  --ink-3: #64748b;
+
+  --card: #ffffff;
+  --card-soft: #f8fafc;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+
+  --shadow-sm: 0 2px 8px rgba(15,23,42,0.06);
+  --shadow-md: 0 10px 25px rgba(15,23,42,0.10);
+  --shadow-lg: 0 20px 60px rgba(15,23,42,0.18);
+
+  --ring: 0 0 0 3px rgba(102,126,234,0.25);
+}
+
+*{ box-sizing: border-box; margin: 0; padding: 0; }
+html{ scroll-behavior:smooth; }
+
+body{
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  background: radial-gradient(1200px circle at 20% -10%, #8b5cf6 0%, transparent 50%),
+              radial-gradient(1000px circle at 100% 0%, #60a5fa 0%, transparent 55%),
+              linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  padding: clamp(12px, 3vw, 24px);
+  min-height: 100vh;
+  color: var(--ink-1);
+}
+
+.brochure{
+  max-width: 1060px;
+  margin: 0 auto;
+  background: var(--card);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+/* =========================
+   Header
+========================= */
+.header{
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color: white;
+  padding: clamp(36px, 6vw, 64px) clamp(20px, 5vw, 44px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  isolation:isolate;
+}
+.header::before{
+  content: "";
+  position:absolute;
+  inset:-40% -20% auto auto;
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 60%);
+  transform: rotate(12deg);
+  z-index:-1;
+}
+.header::after{
+  content: "🤖";
+  position: absolute;
+  font-size: clamp(110px, 18vw, 220px);
+  opacity: 0.08;
+  right: clamp(-40px, -5vw, -10px);
+  top: clamp(-60px, -8vw, -20px);
+  filter: blur(0.5px);
+}
+.header h1{
+  font-size: clamp(1.9rem, 5vw, 3.1rem);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+.header p{
+  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  opacity: 0.95;
+}
+
+.whatsapp-icon{
+  font-size: clamp(2.8rem, 6vw, 4.2rem);
+  margin-bottom: 8px;
+  animation: float 3.2s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-12px); }
+}
+
+/* =========================
+   Layout / Sections
+========================= */
+.content{
+  padding: clamp(26px, 5vw, 56px) clamp(18px, 4vw, 44px);
+}
+
+.section{ margin-bottom: clamp(34px, 6vw, 56px); }
+.section h2{
+  color: var(--brand-1);
+  font-size: clamp(1.45rem, 3vw, 2.05rem);
+  margin-bottom: 18px;
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  letter-spacing: -0.01em;
+}
+.section h2 span{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--brand-soft);
+}
+
+/* =========================
+   Problems Grid
+========================= */
+.problems-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(14px, 2.4vw, 22px);
+  margin-top: 18px;
+}
+
+.problem-card{
+  position:relative;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #ffffff 60%, #fff7f7 100%);
+  padding: clamp(18px, 2.6vw, 26px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,107,107,0.22);
+  box-shadow: var(--shadow-sm);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.problem-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  pointer-events:none;
+  background: radial-gradient(600px circle at -10% -20%, rgba(255,107,107,0.18), transparent 45%);
+  opacity:0;
+  transition: opacity .25s ease;
+}
+.problem-card:hover{
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(255,107,107,0.45);
+}
+.problem-card:hover::after{ opacity:1; }
+
+.problem-icon{
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  margin-bottom: 10px;
+  filter: drop-shadow(0 4px 8px rgba(255,107,107,0.25));
+}
+
+.problem-card h3{
+  color: #b42323;
+  margin-bottom: 8px;
+  font-size: clamp(1.08rem, 2vw, 1.28rem);
+  letter-spacing:-0.01em;
+}
+.problem-card p{
+  color: var(--ink-2);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+/* =========================
+   Empathy Box
+========================= */
+.empathy-box{
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color:white;
+  padding: clamp(22px, 4vw, 38px);
+  border-radius: var(--radius-lg);
+  margin-top: clamp(18px, 3vw, 28px);
+  text-align:center;
+  box-shadow: var(--shadow-md);
+}
+.empathy-box p{
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+
+/* =========================
+   Solution Intro
+========================= */
+.solution-intro{
+  background:
+    radial-gradient(900px circle at 0% 0%, rgba(102,126,234,0.12), transparent 55%),
+    linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  padding: clamp(22px, 4vw, 38px);
+  border-radius: var(--radius-lg);
+  margin: clamp(24px, 4vw, 40px) 0;
+  border: 1px solid rgba(30,64,175,0.08);
+}
+.solution-explanation{ margin-top: 14px; }
+
+.big-text{
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  color: #1e40af;
+  font-weight: 650;
+  margin-bottom: 14px;
+}
+
+.solution-list{
+  list-style:none;
+  padding-left:0;
+  display:grid;
+  gap: 10px;
+}
+.solution-list li{
+  padding: 14px 14px;
+  background: white;
+  border-radius: var(--radius-md);
+  border:1px solid rgba(102,126,234,0.18);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.05rem;
+  color: var(--ink-1);
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+}
+.solution-list li::before{
+  content:"✨";
+  font-size: 1.2rem;
+  line-height:1.2;
+  margin-top:1px;
+}
+
+.highlight-box{
+  background:white;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+  border: 2px dashed rgba(102,126,234,0.8);
+  text-align:center;
+  font-size: clamp(1.02rem, 2vw, 1.18rem) !important;
+  color: var(--ink-1) !important;
+}
+
+/* =========================
+   Impact Scenarios
+========================= */
+.impact-scenarios{ margin-top: 20px; }
+
+.scenario{
+  background: var(--card-soft);
+  padding: clamp(18px, 4vw, 30px);
+  border-radius: var(--radius-lg);
+  margin-bottom: 22px;
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+.scenario h3{
+  color: var(--brand-1);
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+  margin-bottom: 16px;
+  text-align:center;
+}
+
+.before-after{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.before, .after{
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+  background: white;
+}
+
+.before{
+  background: linear-gradient(135deg, var(--danger-soft), #ffecec);
+  border-color: rgba(255,107,107,0.6);
+}
+.after{
+  background: linear-gradient(135deg, var(--success-soft), #dcfce7);
+  border-color: rgba(34,197,94,0.65);
+}
+
+.before h4, .after h4{
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  text-align:center;
+}
+.before h4{ color:#b42323; }
+.after h4{ color:#15803d; }
+
+.before ul, .after ul{
+  list-style:none;
+  padding-left:0;
+  display:grid;
+  gap:8px;
+}
+.before ul li, .after ul li{
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.08);
+  line-height:1.6;
+  color: var(--ink-2);
+}
+
+.result-box{
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color:white;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  text-align:center;
+  font-size: 1.05rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================
+   FAQ
+========================= */
+.faq-section{ margin-top: 12px; }
+
+.faq-item{
+  background:white;
+  padding: 18px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(102,126,234,0.22);
+  border-left: 6px solid var(--brand-1);
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.faq-item:hover{
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.faq-item h4{
+  color: var(--brand-1);
+  font-size: 1.12rem;
+  margin-bottom: 8px;
+}
+.faq-item p{
+  color: var(--ink-2);
+  line-height: 1.75;
+  font-size: 1.02rem;
+}
+
+/* =========================
+   Choice Boxes / CTA
+========================= */
+.choice-boxes{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.choice-box{
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  text-align:center;
+  border:1px solid transparent;
+  box-shadow: var(--shadow-sm);
+}
+
+.option-1{
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.25);
+  backdrop-filter: blur(6px);
+}
+
+.option-2{
+  background: rgba(255,255,255,0.98);
+  border: 3px solid #ffd700;
+  box-shadow: 0 0 0 6px rgba(255,215,0,0.12), 0 10px 30px rgba(255,215,0,0.35);
+  transform: translateY(-2px);
+}
+
+.choice-box h3{
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+}
+.option-2 h3{ color: var(--brand-1); }
+.option-2 p{ color: var(--ink-1); }
+
+/* =========================
+   Features Grid
+========================= */
+.features-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(14px, 2.2vw, 20px);
+  margin-top: 18px;
+}
+
+.feature-card{
+  background:
+    radial-gradient(900px circle at 0% 0%, rgba(102,126,234,0.10), transparent 55%),
+    linear-gradient(135deg, #f8fafc, #eef2ff);
+  padding: clamp(18px, 2.6vw, 26px);
+  border-radius: var(--radius-lg);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  border: 1px solid rgba(102,126,234,0.22);
+  border-left: 6px solid var(--brand-1);
+  box-shadow: var(--shadow-sm);
+}
+.feature-card:hover{
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(102,126,234,0.45);
+}
+
+.feature-card h3{
+  color:#4c1d95;
+  margin-bottom: 8px;
+  font-size: 1.18rem;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.feature-card p{
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.feature-icon{ font-size: 1.8rem; }
+
+/* =========================
+   Benefits list
+========================= */
+.benefits{
+  background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08));
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  margin-top: 18px;
+  border: 1px solid rgba(102,126,234,0.18);
+}
+.benefits ul{
+  list-style:none;
+  padding-left:0;
+  display:grid;
+  gap:10px;
+}
+.benefits li{
+  padding: 14px;
+  background:white;
+  border-radius: var(--radius-md);
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  box-shadow: var(--shadow-sm);
+  transition: transform .15s ease;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+.benefits li:hover{ transform: translateX(6px); }
+.benefits li::before{
+  content:"✓";
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color:white;
+  width: 28px; height: 28px;
+  border-radius: 999px;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  font-weight:800;
+}
+
+/* =========================
+   Stats
+========================= */
+.stats{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.stat-card{
+  background:white;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  text-align:center;
+  border: 1px solid rgba(15,23,42,0.06);
+  box-shadow: var(--shadow-sm);
+}
+.stat-number{
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stat-label{
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-size: 1.05rem;
+}
+
+/* =========================
+   Tech Badges
+========================= */
+.tech-stack{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+}
+.tech-badge{
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color:white;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================
+   CTA
+========================= */
+.cta{
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color:white;
+  padding: clamp(26px, 5vw, 46px);
+  text-align:center;
+  margin-top: 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+.cta h2{
+  color:white;
+  font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+  margin-bottom: 10px;
+}
+.cta-button{
+  display:inline-block;
+  background:white;
+  color: var(--brand-1);
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration:none;
+  font-weight:800;
+  font-size: 1.1rem;
+  margin-top: 16px;
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.cta-button:hover{
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+.cta-button:focus-visible{
+  outline:none;
+  box-shadow: var(--ring), 0 12px 30px rgba(0,0,0,0.35);
+}
+
+/* =========================
+   Motion accessibility
+========================= */
+@media (prefers-reduced-motion: reduce){
+  *{ animation: none !important; transition: none !important; }
+}
+    </style>
+</head>
+<body>
+    <div class="brochure">
+        <div class="header">
+            <div class="whatsapp-icon">💬</div>
+            <h1>Agente de IA para WhatsApp</h1>
+            <p>Automatiza tu atención al cliente 24/7 con inteligencia artificial</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2><span>😓</span> ¿Te identificas con estos problemas?</h2>
+                <div class="problems-grid">
+                    <div class="problem-card">
+                        <div class="problem-icon">⏰</div>
+                        <h3>¿Pierdes ventas fuera de horario?</h3>
+                        <p>Tus clientes te escriben por WhatsApp a las 10 PM, los domingos o feriados... y cuando respondes al día siguiente, ya compraron en otro lado.</p>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <div class="problem-icon">😰</div>
+                        <h3>¿Estás saturado de mensajes?</h3>
+                        <p>Pasas horas respondiendo las mismas preguntas: "¿Cuánto cuesta?", "¿Tienen en talla M?", "¿Cómo hago el pedido?" Una y otra vez...</p>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <div class="problem-icon">📱</div>
+                        <h3>¿No puedes atender a todos?</h3>
+                        <p>Cuando llegan varios clientes a la vez, algunos quedan esperando. Y un cliente que espera... es un cliente que se va.</p>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <div class="problem-icon">💸</div>
+                        <h3>¿Contratar personal es muy caro?</h3>
+                        <p>Necesitas ayuda, pero sumar personas al equipo significa sueldos, capacitación, supervisión... y aún así no cubres las 24 horas.</p>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <div class="problem-icon">😫</div>
+                        <h3>¿Te sientes esclavo del celular?</h3>
+                        <p>No puedes desconectarte. Estás pegado al teléfono porque sabes que cada mensaje sin responder es dinero que dejas de ganar.</p>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <div class="problem-icon">📉</div>
+                        <h3>¿Se te escapan oportunidades?</h3>
+                        <p>Clientes interesados que no terminan comprando porque la atención fue lenta, el proceso confuso o simplemente se olvidaron.</p>
+                    </div>
+                </div>
+                
+                <div class="empathy-box">
+                    <p><strong>Si dijiste "sí" a alguna de estas situaciones, no estás solo.</strong></p>
+                    <p>Miles de negocios enfrentan estos mismos desafíos cada día. La buena noticia es que existe una solución que está transformando la forma en que atienden a sus clientes.</p>
+                </div>
+            </div>
+            
+            <div class="section solution-intro">
+                <h2><span>💡</span> La Solución: Tu Asistente de Ventas por WhatsApp</h2>
+                <div class="solution-explanation">
+                    <p class="big-text">Imagina tener un vendedor experto que:</p>
+                    <ul class="solution-list">
+                        <li><strong>Nunca duerme</strong> - Atiende a tus clientes 24/7, incluso mientras descansas</li>
+                        <li><strong>Nunca se cansa</strong> - Responde con la misma energía y amabilidad al cliente 1 y al cliente 100</li>
+                        <li><strong>Nunca se equivoca</strong> - Conoce perfectamente tu catálogo, precios y disponibilidad</li>
+                        <li><strong>Habla como humano</strong> - Conversa de forma natural, cálida y personalizada</li>
+                        <li><strong>Procesa todo tipo de mensajes</strong> - Textos, notas de voz, imágenes... entiende todo</li>
+                        <li><strong>Cierra ventas</strong> - Guía al cliente desde la consulta hasta el pago</li>
+                    </ul>
+                    <p class="big-text highlight-box">Esto NO es un bot con respuestas automáticas. Es <strong>Inteligencia Artificial</strong> que piensa, comprende y responde como lo harías tú.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span>📈</span> El Impacto Real en Tu Negocio</h2>
+                
+                <div class="impact-scenarios">
+                    <div class="scenario">
+                        <h3>💰 Si vendes productos (ropa, accesorios, artículos, etc.)</h3>
+                        <div class="before-after">
+                            <div class="before">
+                                <h4>❌ ANTES</h4>
+                                <ul>
+                                    <li>Pierdes el 60% de las consultas que llegan fuera de horario</li>
+                                    <li>Tardas 2-3 horas en responder en horas pico</li>
+                                    <li>Pasas 5-6 horas diarias solo respondiendo WhatsApp</li>
+                                    <li>Confusión con tallas, modelos y disponibilidad</li>
+                                    <li>Ventas perdidas: ~S/ 3,000 - 8,000/mes</li>
+                                </ul>
+                            </div>
+                            <div class="after">
+                                <h4>✅ CON LA AUTOMATIZACIÓN</h4>
+                                <ul>
+                                    <li>Capturas TODAS las consultas 24/7</li>
+                                    <li>Respuesta instantánea (menos de 3 segundos)</li>
+                                    <li>Recuperas 5 horas diarias para hacer crecer tu negocio</li>
+                                    <li>Información precisa y actualizada siempre</li>
+                                    <li>Incremento promedio: 40-60% en conversión de ventas</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="result-box">
+                            <strong>Resultado:</strong> Recuperas miles en ventas perdidas + liberas tu tiempo para estrategia y crecimiento
+                        </div>
+                    </div>
+                    
+                    <div class="scenario">
+                        <h3>🛠️ Si ofreces servicios (salón, consultorías, talleres, etc.)</h3>
+                        <div class="before-after">
+                            <div class="before">
+                                <h4>❌ ANTES</h4>
+                                <ul>
+                                    <li>Clientes potenciales se van por respuestas tardías</li>
+                                    <li>Repites la misma información 20 veces al día</li>
+                                    <li>Pierdes tiempo en consultas que no concretan</li>
+                                    <li>No hay seguimiento de clientes interesados</li>
+                                    <li>Agenda desorganizada y dobles citas</li>
+                                </ul>
+                            </div>
+                            <div class="after">
+                                <h4>✅ CON LA AUTOMATIZACIÓN</h4>
+                                <ul>
+                                    <li>Información de servicios entregada al instante</li>
+                                    <li>Calificación automática de prospectos serios</li>
+                                    <li>Proceso de reserva guiado paso a paso</li>
+                                    <li>Recordatorios automáticos que reducen ausencias</li>
+                                    <li>Más tiempo para atender a tus clientes presenciales</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="result-box">
+                            <strong>Resultado:</strong> Agenda más llena + clientes mejor informados + tú enfocado en dar un servicio excepcional
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span>🎯</span> ¿Por Qué Funciona? Las Capacidades que Hacen la Diferencia</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3><span class="feature-icon">🧠</span> Conversaciones Naturales</h3>
+                        <p>No responde con plantillas rígidas. La IA comprende el contexto y responde como un humano amable y profesional.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3><span class="feature-icon">🎤</span> Entiende Audio e Imágenes</h3>
+                        <p>Tu cliente prefiere mandar notas de voz o fotos? No hay problema. El sistema transcribe y analiza todo tipo de contenido.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3><span class="feature-icon">📦</span> Inventario en Tiempo Real</h3>
+                        <p>Conectado a tu catálogo. Sabe exactamente qué tienes disponible, en qué tallas/variantes y a qué precio.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3><span class="feature-icon">🎨</span> Se Adapta a Tu Marca</h3>
+                        <p>Habla con el tono de tu negocio: formal, casual, amigable... tú decides cómo debe comunicarse con tus clientes.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3><span class="feature-icon">💳</span> Guía el Proceso de Compra</h3>
+                        <p>Desde la consulta inicial hasta el pago. Recomienda productos, responde dudas, envía catálogos y cierra la venta.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3><span class="feature-icon">🔄</span> Memoria Perfecta</h3>
+                        <p>Recuerda cada interacción. Si un cliente vuelve días después, retoma la conversación donde quedó.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span>💎</span> Beneficios que Transforman Tu Negocio</h2>
+                <div class="benefits">
+                    <ul>
+                        <li><strong>Vende mientras duermes:</strong> Tu negocio no cierra. Genera ingresos las 24 horas del día, los 7 días de la semana</li>
+                        <li><strong>Recupera tu vida personal:</strong> Desconéctate sin culpa. La IA se encarga mientras tú disfrutas tu tiempo libre</li>
+                        <li><strong>Escala sin límites:</strong> Atiende 10 o 1,000 clientes al mismo tiempo con la misma calidad</li>
+                        <li><strong>Clientes más felices:</strong> Respuestas instantáneas = clientes satisfechos que recomiendan tu negocio</li>
+                        <li><strong>Cero errores humanos:</strong> Información siempre correcta, sin olvidos ni confusiones</li>
+                        <li><strong>Ahorra en personal:</strong> Sin sueldos adicionales, vacaciones ni capacitaciones constantes</li>
+                        <li><strong>Datos e insights:</strong> Registro completo de todas las interacciones para entender mejor a tus clientes</li>
+                        <li><strong>Profesionaliza tu negocio:</strong> Impresiona a tus clientes con tecnología de punta</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span>💭</span> "Pero... ¿Y Si...?" - Preguntas Frecuentes</h2>
+                <div class="faq-section">
+                    <div class="faq-item">
+                        <h4>❓ "¿No se va a notar que es un robot?"</h4>
+                        <p>Esa es la magia: <strong>conversa de forma tan natural que tus clientes no notan la diferencia</strong>. Usa tu tono de marca, emojis, y responde con contexto como lo harías tú.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>❓ "¿Y si el cliente pregunta algo muy específico?"</h4>
+                        <p>La IA está entrenada con información de tu negocio y tiene acceso a tu catálogo en tiempo real. Si hay algo que realmente necesita intervención humana, <strong>te notifica para que tomes el control</strong>.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>❓ "Suena complicado de instalar..."</h4>
+                        <p><strong>Nosotros nos encargamos de todo.</strong> Solo necesitas compartir información de tu negocio y en pocos días estará funcionando. Tú solo ves los resultados.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>❓ "¿Es muy caro?"</h4>
+                        <p>Piénsalo así: ¿cuánto te cuesta <strong>NO</strong> tener esto? Las ventas perdidas, las horas de tu vida pegado al celular, el estrés... Esta inversión <strong>se paga sola</strong> con las ventas que recuperas en el primer mes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span>🎯</span> Números Que Hablan Por Sí Solos</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Disponibilidad Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">&lt;3seg</div>
+                        <div class="stat-label">Tiempo de Respuesta</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">40-60%</div>
+                        <div class="stat-label">Incremento en Conversión</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Clientes Atendidos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span>🛠️</span> Tecnología de Última Generación</h2>
+                <p style="font-size: 1.1em; color: #555; margin-bottom: 20px; text-align: center;">
+                    No es magia, es tecnología probada y confiable utilizada por miles de empresas en el mundo
+                </p>
+                <div class="tech-stack">
+                    <span class="tech-badge">🤖 OpenAI GPT-4 (La IA más avanzada)</span>
+                    <span class="tech-badge">💬 WhatsApp Business API</span>
+                    <span class="tech-badge">🎤 Transcripción de Audio</span>
+                    <span class="tech-badge">👁️ Análisis de Imágenes</span>
+                    <span class="tech-badge">📊 Integración con Inventarios</span>
+                    <span class="tech-badge">🔒 100% Seguro y Confiable</span>
+                </div>
+            </div>
+
+            <div class="cta">
+                <h2>Es Momento de Decidir</h2>
+                <p style="font-size: 1.2em; margin: 20px 0; line-height: 1.6;">
+                    Cada día que pasa sin automatizar tu atención es dinero que dejas de ganar.<br>
+                    Mientras lees esto, tus competidores están implementando esta tecnología.<br><br>
+                    <strong>Tienes dos opciones:</strong>
+                </p>
+                
+                <div class="choice-boxes">
+                    <div class="choice-box option-1">
+                        <h3>❌ Seguir igual</h3>
+                        <p>Esclavo del celular, perdiendo ventas, saturado de mensajes, sin poder crecer...</p>
+                    </div>
+                    <div class="choice-box option-2">
+                        <h3>✅ Dar el salto</h3>
+                        <p>Automatizar, recuperar tu tiempo, multiplicar tus ventas y hacer crecer tu negocio sin límites</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <p style="font-size: 1.3em; margin-bottom: 25px;">
+                        <strong>Agenda una demostración GRATIS</strong><br>
+                        <span style="font-size: 0.9em;">Te mostramos cómo funcionaría en TU negocio específicamente</span>
+                    </p>
+                    <a href="#contacto" class="cta-button">Ver Demo en Vivo - Sin Compromiso →</a>
+                    <p style="margin-top: 20px; font-size: 0.95em; opacity: 0.9;">
+                        🎁 Los primeros 10 negocios reciben un descuento especial de lanzamiento
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
